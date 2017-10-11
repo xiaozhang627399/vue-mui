@@ -4,9 +4,12 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 import store from './store'
+import Loading from './components/Loading.vue'
 
 import './assets/mui/css/mui.css'
 import mui from './assets/mui/js/mui.min.js'
+
+Vue.component('Loading',Loading)
 
 Vue.config.productionTip = false
 

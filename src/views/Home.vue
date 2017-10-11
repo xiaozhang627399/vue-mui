@@ -32,7 +32,7 @@
 	</div>
 	<div>
 		<ul class="mui-table-view">
-			<li class="mui-table-view-cell mui-media" v-for = 'x in datalist'>
+			<li class="mui-table-view-cell mui-media" v-for = 'x in datalist' @click = 'goarticle(x)'>
 				<a href="javascript:;">
 					<img class="mui-media-object mui-pull-left" :src='x.images'>
 					<div class="mui-media-body">
@@ -49,6 +49,7 @@
 
 <script>
 import api from '@/api/index.js'
+import { mapState } from 'vuex'
 
 export default {
   name:'home',
@@ -60,10 +61,19 @@ export default {
   		imageslistfirst:''
   	}
   },
+  computed:{
+       ...mapState([
+           'isloading'
+       	])
+    },
   mounted(){
   	const that = this;
-  	
+  	// alert(this.isloading)
     api.getnews().then(function(data){
+        that.$store.dispatch('changeload',{
+          isloading:false
+        })
+
     	// console.log(data.data.top_stories[0].image)
     	that.datalist = data.data.stories;
     	that.imageslist = data.data.top_stories;
@@ -76,7 +86,20 @@ export default {
 	});
     
 
-  }  
+  },
+  methods:{
+  	goarticle(x){
+  		this.$store.dispatch('changeload',{
+          isloading:true
+        })
+			this.$router.push({
+	          path: 'article',
+	          query : {
+	            id : x.id ||''
+	          }
+	        });
+		}
+  }
 }
 </script>
 

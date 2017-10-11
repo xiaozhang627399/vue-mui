@@ -10,6 +10,7 @@
 
 <script>
     import api from '@/api/index.js'
+    import { mapState } from 'vuex'
 
 	export default {
 		name:'article',
@@ -22,10 +23,18 @@
         mounted(){
            this.articleid = this.$route.query.id
         },
+        computed:{
+       ...mapState([
+           'isloading'
+       	])
+    },
         methods:{
         	getList(){
 			   const that = this;
                api.getartical(that.articleid).then(function(data){
+	               	that.$store.dispatch('changeload',{
+			          isloading:false
+			        });
                    that.data = data.data;
                 })
 			},

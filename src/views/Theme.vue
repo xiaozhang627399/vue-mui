@@ -22,6 +22,7 @@
 
 <script>
     import api from '@/api/index.js'
+    import { mapState } from 'vuex'
 
 	export default {
 		name:'theme',
@@ -35,15 +36,26 @@
 		mounted(){
             this.newsid = this.$route.query.id;
 		},
+		computed:{
+       ...mapState([
+           'isloading'
+       	])
+    },
 		methods:{
 			getList(){
 			   const that = this;
                api.getlistNews(that.newsid).then(function(data){
+               	    that.$store.dispatch('changeload',{
+			          isloading:false
+			        });
                    that.newslist = data.data.stories,
                    that.newsdata = data.data;
                 })
 			},
 			goarticle(x){
+				 this.$store.dispatch('changeload',{
+		          isloading:true
+		        });
 				this.$router.push({
 		          path: 'article',
 		          query : {

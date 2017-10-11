@@ -1,14 +1,14 @@
 <template>
   <div id="app">
     <header class="mui-bar mui-bar-nav zh-header">
-      <a v-if = 'true' class="mui-icon mui-icon-bars mui-pull-right" @click = 'clickdowm()'></a>
-      <a v-if = 'false' class="mui-icon mui-icon-back mui-pull-left"></a> 
-      <h1 class="mui-title" >{{title}}</h1>     
+      <a v-if = '!isback' class="mui-icon mui-icon-bars mui-pull-right" @click = 'clickdowm()'></a>
+      <a v-if = 'isback' class="mui-icon mui-icon-back mui-pull-left" @click = "back()"></a> 
+      <!-- <h1 class="mui-title" >{{title}}</h1>      -->
      </header>
      <div id="menu-wrapper" class="menu-wrapper hidden">
       <div id="menu" class="menu">
         <ul class="mui-table-view mui-table-view-inverted">
-          <li class="mui-table-view-cell">
+          <li class="mui-table-view-cell" @click = "clickli(1)">
             <a href="javascript:;">首页</a>
           </li>
           <li class="mui-table-view-cell" v-for = "x in topicsList" @click = "clickli(x)" :themeid = 'x.id'>
@@ -18,6 +18,8 @@
       </div>
     </div>
     <div id="menu-backdrop" class="menu-backdrop" @click="backdrop()"></div>
+
+    <Loading v-if = "isloading"></Loading>
 
     <div class="mui-content box-content">
         <transition :name="transitionName">
@@ -34,16 +36,25 @@
 // import mui from './assets/mui/js/mui.min.js'
 
 // console.log(mui)
-import axios from 'axios'
+// import axios from 'axios'
 import api from '@/api/index.js'
+import { mapState } from 'vuex'
 
 // console.log(axios)
 export default {
   name: 'app',
   mounted(){
      var that = this;
-     that.title = '首页'; 
-     api.getTopics().then(function(data) {
+     // that.title = '首页'; 
+     if(that.$route.path == '/article'){
+         that.isback = true
+     }
+     api.getTopics().then(function(data) {    
+        // alert(that.isloading)
+        that.$store.dispatch('changeload',{
+          isloading:false
+        })
+
         that.topicsList = data.data.others;
       })
   },
@@ -53,15 +64,24 @@ export default {
       showdowm:false,
       transitionName:'slide-left',
       themeid:'',
-      title:''
+      title:'',
+      isback:false
       }
+    },
+    computed:{
+        ...mapState([
+           'isloading'
+        ])
     },
   watch:{
     '$route' (to, from) {
-      let vue = this;
-      const toDepth = to.path.split('/').length
-      const fromDepth = from.path.split('/').length
-      vue.transitionName = toDepth < fromDepth ? 'slide-right' : 'slide-left';
+      if(to.path == '/article'){
+        this.isback = true;
+        this.transitionName = 'slide-left'
+      }else{
+        this.isback = false;
+        this.transitionName = 'slide-right'
+      }
       // to.path == '/' && this.num != 1 && this.$store.commit('add', 1);
       // this.transitionName = to.path != "/article" ? 'slide-right' : 'slide-left';
     }
@@ -101,13 +121,26 @@ export default {
     },
     clickli(x){
       this.clickdowm();
-      this.title = x.name;
-      this.$router.push({
+      // this.title = x.name;
+      this.$store.dispatch('changeload',{
+          isloading:true
+        })
+      if(x == 1){
+        this.$router.push({
+          path: '/'
+        });
+      }else{
+        this.$router.push({
           path: 'theme',
           query : {
             id : x.id ||''
           }
         });
+      }
+      
+    },
+    back(){
+      window.history.back();
     }
   }
 }
@@ -135,5 +168,25 @@ export default {
 
 .mui-bar-nav ~ .box-content{
   padding-top: 0;
+}
+.app-view {
+position: absolute;
+width: 100%;
+transition: all .8s ease;
+top: 40px;
+}
+
+.slide-left-enter,
+.slide-right-leave-active {
+opacity: 0;
+-webkit-transform: translate(100%, 0);
+transform: translate(100%, 0);
+}
+
+.slide-left-leave-active,
+.slide-right-enter {
+opacity: 0;
+-webkit-transform: translate(-100%, 0);
+transform: translate(-100% 0);
 }
 </style>
